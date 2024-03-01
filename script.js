@@ -49,7 +49,7 @@ let categories = {
         "cheetah",
         "wolf"
     ],
-    coutries: [
+    countries: [
         "Argentina",
         "Brazil",
         "Canada",
@@ -70,6 +70,28 @@ let categories = {
         "United States",
         "Australia",
         "South Africa"
+    ],
+    fruits: [
+        "apple",
+        "banana",
+        "orange",
+        "strawberry",
+        "grape",
+        "watermelon",
+        "pineapple",
+        "kiwi",
+        "peach",
+        "mango",
+        "pear",
+        "cherry",
+        "blueberry",
+        "raspberry",
+        "lemon",
+        "lime",
+        "coconut",
+        "apricot",
+        "fig",
+        "pomegranate"
     ]
 };
 
