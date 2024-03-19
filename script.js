@@ -6,95 +6,6 @@ const ngButton = document.getElementById("ng-button");
 const canvas = document.getElementById("game-canvas");
 const resultText = document.getElementById("result-text");
 
-let categories = {
-    vegetables: [
-        "carrot",
-        "potato",
-        "tomato",
-        "cucumber",
-        "lettuce",
-        "onion",
-        "broccoli",
-        "spinach",
-        "bell pepper",
-        "zucchini",
-        "eggplant",
-        "celery",
-        "cabbage",
-        "cauliflower",
-        "green bean",
-        "sweet potato",
-        "radish",
-        "asparagus"
-    ],
-    animals: [
-        "dog",
-        "cat",
-        "lion",
-        "elephant",
-        "tiger",
-        "giraffe",
-        "bear",
-        "zebra",
-        "monkey",
-        "rabbit",
-        "kangaroo",
-        "penguin",
-        "panda",
-        "hippopotamus",
-        "koala",
-        "snake",
-        "crocodile",
-        "rhinoceros",
-        "cheetah",
-        "wolf"
-    ],
-    countries: [
-        "Argentina",
-        "Brazil",
-        "Canada",
-        "China",
-        "Egypt",
-        "France",
-        "Germany",
-        "India",
-        "Italy",
-        "Japan",
-        "Mexico",
-        "Netherlands",
-        "Russia",
-        "Spain",
-        "Sweden",
-        "Turkey",
-        "United Kingdom",
-        "United States",
-        "Australia",
-        "South Africa"
-    ],
-    fruits: [
-        "apple",
-        "banana",
-        "orange",
-        "strawberry",
-        "grape",
-        "watermelon",
-        "pineapple",
-        "kiwi",
-        "peach",
-        "mango",
-        "pear",
-        "cherry",
-        "blueberry",
-        "raspberry",
-        "lemon",
-        "lime",
-        "coconut",
-        "apricot",
-        "fig",
-        "pomegranate"
-    ]
-};
-
 //score
 let correct = 0;
 let strikes = 0;
@@ -102,36 +13,69 @@ let strikes = 0;
 let word = "";
 
 //Show categories
-const showCategories = () => {
+function fetchCategories() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'hangman.php?action=fetchCategories', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 400) {
+            var data = JSON.parse(xhr.responseText);
+            showCategories(data);
+        } else {
+            console.error('Error fetching categories');
+        }
+    };
+    xhr.onerror = function() {
+        console.error('Request failed');
+    };
+    xhr.send();
+}
+
+// Function to display categories from fetched data
+function showCategories(categories) {
     categoriesContainer.innerHTML += '<h3>Please Select A Category</h3>';
     let buttonContainer = document.createElement("div");
-    for (let value in categories) {
-        buttonContainer.innerHTML += `<button class="category" onclick="generateWord('${value}')">${value}</button>`;
+    for (let category in categories) {
+        buttonContainer.innerHTML += `<button class="category" onclick="generateWord('${category}')">${category}</button>`;
     }
     categoriesContainer.appendChild(buttonContainer);  
 }
 
 //Generate word
-const generateWord = (categoryValue) => {
+function generateWord(categoryValue) {
+    // Disable category buttons
     let categoryButtons = document.querySelectorAll(".category");
     categoryButtons.forEach((button) => {
-        if (button.innerText.toLowerCase() === categoryValue) {
-            button.classList.add("active");
-        };
         button.disabled = true;
     });
 
+    // Update UI
     letterContainer.classList.remove("hide");
     inputContainer.innerText = "";
 
-    let categoryArray = categories[categoryValue];
-    word = categoryArray[Math.floor(Math.random() * categoryArray.length)];
-    word = word.toUpperCase();
-
-    //display dashes instead of letters
-    let wordDisplay = word.replace(/./g, '<span class="dashes">_</span>');
-
-    inputContainer.innerHTML = wordDisplay;
+    // Make AJAX request to generate word
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'hangman.php?action=generateWord&category=' + categoryValue, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 400) {
+            var data = JSON.parse(xhr.responseText);
+            if (data.word) {
+                console.log('Generated word:', data.word);
+                // Display dashes instead of letters
+                let wordDisplay = data.word.replace(/./g, '<span class="dashes">_</span>');
+                inputContainer.innerHTML = wordDisplay;
+            } else {
+                console.error('Error generating word:', data.error);
+            }
+        } else {
+            console.error('Request failed');
+        }
+    };
+    xhr.onerror = function() {
+        console.error('Request failed');
+    };
+    xhr.send();
 }
 
 //Canvas
@@ -263,7 +207,7 @@ const initialize = () => {
         letterContainer.append(button);
     }
 
-    showCategories();
+    fetchCategories();
     let { emptyDrawing } = canvasCreator();
     emptyDrawing();
 };
